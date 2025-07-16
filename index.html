@@ -1,132 +1,292 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Alco Suite - Conectado a Supabase</title>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-  <link rel="stylesheet" href="alco-css-separated.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Alco Manufacturing Suite</title>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css  ">
+    <link rel="stylesheet" href="alco-css-separated.css">
 </head>
+
 <body>
 
-  <!-- LOGIN -->
-  <div class="login-container active" id="loginContainer">
-    <header class="login-header">
-      <img src="img/LOGO.png.jpg" alt="Logo Alco" class="logo">
-      <span class="login-page-title">WEB PROYECTOS CALIDAD</span>
-    </header>
-    <div class="login-form-container">
-      <h2 class="login-form-title">Acceso al Sistema</h2>
-      <form id="loginForm">
-        <label>Correo electrónico:</label>
-        <input type="email" id="email" required />
-        <label>Contraseña:</label>
-        <input type="password" id="password" required />
-        <button type="submit" class="login-button">Ingresar</button>
-      </form>
-      <p id="loginError" style="color: red; display: none;">Credenciales incorrectas</p>
+    <!-- Pantalla de Login -->
+    <div class="login-container active" id="loginContainer">
+        <header class="login-header">
+            <img src="img/LOGO.png.jpg" alt="Logo Alco Windows & Doors" class="logo">
+            <span class="login-page-title">WEB PROYECTOS CALIDAD</span>
+        </header>
+        <div class="login-form-container">
+            <h2 class="login-form-title">Acceso al Sistema</h2>
+            <form class="login-form" id="loginForm">
+                <label for="username">Usuario:</label>
+                <input type="text" id="username" name="username" required>
+                <label for="password">Contraseña:</label>
+                <input type="password" id="password" name="password" required>
+                <button type="submit" class="login-button">Ingresar</button>
+            </form>
+        </div>
+        <footer class="login-footer">
+            <p class="company-message">Alco S.A.S. - Excelencia en Calidad y Producción</p>
+            <p>© 2025 Desarrollado por Geankarlo Paz Muñoz & Janier Mosquera Mosquera</p>
+        </footer>
     </div>
-  </div>
 
-  <!-- APP -->
-  <div class="app-container" id="mainAppContainer">
-    <button class="sidebar-toggle-btn" id="sidebarToggleBtn" title="Abrir Menú">
-      <i class="fas fa-bars"></i>
-    </button>
+    <!-- Contenedor Principal de la Aplicación -->
+    <div class="app-container" id="mainAppContainer">
 
-    <aside class="sidebar" id="sidebar">
-      <div class="sidebar-header">
-        <img src="img/LOGO.png.jpg" alt="Logo" class="sidebar-logo">
-        <span class="sidebar-title">Alco Suite</span>
-      </div>
-      <div class="sidebar-user-profile">
-        <div class="user-avatar-initial" id="userAvatarInitial">U</div>
-        <div class="user-details">
-          <span class="user-name-display" id="sidebarUserDisplay">Usuario</span>
-          <span class="user-role" id="sidebarUserRole">Rol</span>
-        </div>
-      </div>
-      <nav class="sidebar-nav">
-        <ul>
-          <li><a href="#" class="nav-link active" data-module="dashboardPrincipalModule">
-            <i class="fas fa-tachometer-alt"></i> Dashboard Principal</a></li>
-
-          <li class="nav-item-has-children">
-            <a href="#" class="nav-link" data-module-parent="calidadParentModule">
-              <i class="fas fa-check-circle"></i> Calidad <i class="fas fa-chevron-down arrow-icon"></i>
-            </a>
-            <ul class="submenu">
-              <li><a href="#" class="nav-link submenu-link" data-module="formulariosModule">
-                <i class="fas fa-clipboard-list"></i> Formularios</a></li>
-              <li><a href="#" class="nav-link submenu-link" data-module="bibliotecaModule">
-                <i class="fas fa-folder-open"></i> Biblioteca</a></li>
-              <li><a href="#" class="nav-link submenu-link" data-module="indicadoresModule">
-                <i class="fas fa-chart-line"></i> Indicadores</a></li>
-            </ul>
-          </li>
-
-          <li><a href="#" class="nav-link" data-module="reportesModule">
-            <i class="fas fa-file-alt"></i> Reportes</a></li>
-        </ul>
-      </nav>
-      <div class="sidebar-footer">
-        <button id="logoutButton" class="logout-button-sidebar">
-          <i class="fas fa-sign-out-alt"></i> Cerrar Sesión
+        <button class="sidebar-toggle-btn" id="sidebarToggleBtn" title="Abrir Menú">
+            <i class="fas fa-bars"></i> <!-- Icono por defecto para móvil, JS lo cambiará para desktop -->
         </button>
-      </div>
-    </aside>
 
-    <main class="content-area" id="contentArea">
-      <!-- Dashboard -->
-      <div class="module-content active" id="dashboardPrincipalModule">
-        <h1 class="content-title">Dashboard Principal</h1>
-        <div class="dashboard-widgets">
-          <div class="widget"><h3>Formularios</h3><div class="widget-value" id="totalForms">--</div></div>
-          <div class="widget"><h3>Documentos</h3><div class="widget-value" id="totalDocs">--</div></div>
-        </div>
-      </div>
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <img src="img/LOGO.png.jpg" alt="Alco Logo" class="sidebar-logo">
+                <span class="sidebar-title">Alco Suite</span>
+                <button class="sidebar-expand-btn" id="sidebarExpandBtn" title="Expandir Menú">
+                    <i class="fas fa-angle-double-right"></i>
+                </button>
+            </div>
+            <div class="sidebar-user-profile">
+                <div class="user-avatar-initial" id="userAvatarInitial">U</div>
+                <div class="user-details">
+                    <span class="user-name-display" id="sidebarUserDisplay">Usuario</span>
+                    <span class="user-role">Rol</span>
+                </div>
+            </div>
+            <nav class="sidebar-nav">
+                <ul>
+                    <!-- Menú Simplificado -->
+                    <li><a href="#" class="nav-link active" data-module="dashboardPrincipalModule"><i
+                                class="fas fa-tachometer-alt"></i> <span class="nav-link-text">Dashboard
+                                Principal</span></a></li>
+                    <li class="nav-item-has-children">
+                        <a href="#" class="nav-link" data-module-parent="calidadParentModule"><i
+                                class="fas fa-check-circle"></i> <span class="nav-link-text">Calidad</span> <i
+                                class="fas fa-chevron-down arrow-icon"></i></a>
+                        <ul class="submenu">
+                            <li><a href="#" class="nav-link submenu-link" data-module="formulariosModule"><i
+                                        class="fas fa-clipboard-list"></i> <span
+                                        class="nav-link-text">Formularios</span></a></li>
+                            <li><a href="#" class="nav-link submenu-link" data-module="bibliotecaModule"><i
+                                        class="fas fa-folder-open"></i> <span
+                                        class="nav-link-text">Biblioteca</span></a></li>
+                            <li><a href="#" class="nav-link submenu-link" data-module="indicadoresModule"><i
+                                        class="fas fa-chart-line"></i> <span
+                                        class="nav-link-text">Indicadores</span></a></li>
+                        </ul>
+                    </li>
+                    <li><a href="#" class="nav-link" data-module="reportesModule"><i class="fas fa-file-alt"></i> <span
+                                class="nav-link-text">Reportes</span></a></li>
+                </ul>
+            </nav>
+            <div class="sidebar-footer">
+                <button id="logoutButton" class="logout-button-sidebar"><i class="fas fa-sign-out-alt"></i> <span
+                        class="nav-link-text">Cerrar Sesión</span></button>
+            </div>
+        </aside>
 
-      <!-- Formularios -->
-      <div class="module-content" id="formulariosModule">
-        <h2 class="content-subtitle">Formularios de Inspección</h2>
-        <form class="inspection-form" id="inspectionForm">
-          <div class="form-group"><label>Fecha Inspección:</label><input type="date" name="inspection_date" required /></div>
-          <div class="form-group"><label>Inspector:</label><input type="text" name="inspector_name" required /></div>
-          <div class="form-group"><label>Código Producto:</label><input type="text" name="product_code" required pattern="[A-Z0-9]{5,10}" /></div>
-          <div class="form-group"><label>Nº Lote:</label><input type="text" name="batch_number" required /></div>
-          <div class="form-group"><label>Estado:</label><select name="status" required><option value="">Seleccione</option><option value="aprobado">Aprobado</option><option value="rechazado">Rechazado</option><option value="pendiente">Pendiente</option></select></div>
-          <div class="form-buttons"><button type="submit" class="submit-button">Guardar</button></div>
-        </form>
-      </div>
+        <main class="content-area" id="contentArea">
+            <!-- Módulo Dashboard Principal -->
+            <div class="module-content active" id="dashboardPrincipalModule">
+                <h1 class="content-title">Dashboard Principal</h1>
+                <div class="dashboard-widgets">
+                    <div class="widget">
+                        <h3>OEE</h3>
+                        <div class="widget-value">84.2%</div>
+                        <div class="widget-comparison">+2.1% vs mes ant.</div>
+                    </div>
+                    <div class="widget">
+                        <h3>MTBF</h3>
+                        <div class="widget-value">168h</div>
+                        <div class="widget-comparison">+12h vs prom.</div>
+                    </div>
+                    <div class="widget">
+                        <h3>Unidades Prod.</h3>
+                        <div class="widget-value">25,780</div>
+                        <div class="widget-comparison">Meta: 28,000</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Módulo de Formularios de Inspección (Hijo de Calidad) -->
+            <div class="module-content" id="formulariosModule">
+                <div class="module-header-content">
+                    <nav aria-label="breadcrumb">
+                        <ol class="breadcrumb-content">
+                            <li class="breadcrumb-item"><a href="#" class="breadcrumb-link-main-module"
+                                    data-main-module="calidadParentModule">Calidad</a></li>
+                            <li class="breadcrumb-item active" aria-current="page">Formularios</li>
+                        </ol>
+                    </nav>
+                </div>
+                <h2 class="content-subtitle">Formularios de Inspección</h2>
+                <div class="form-selector"><select id="formType" name="formType">
+                        <option value="">Seleccione área</option>
+                        <option value="perfileria">Perfilería</option>
+                        <option value="pintura">Pintura</option>
+                        <option value="troquelados">Troquelados</option>
+                        <option value="felpa">Felpa y Empaque</option>
+                        <option value="vidrio">Vidrio</option>
+                        <option value="despachos">Despachos</option>
+                    </select></div>
+                <form class="inspection-form" id="inspectionForm">
+                    <div class="form-group"><label for="inspectionDate">Fecha Inspección:</label><input type="date"
+                            id="inspectionDate" name="inspectionDate" required></div>
+                    <div class="form-group"><label for="inspectorName">Inspector:</label><input type="text"
+                            id="inspectorName" name="inspectorName" required></div>
+                    <div class="form-group"><label for="productCode">Cód. Producto:</label><input type="text"
+                            id="productCode" name="productCode" required pattern="^[A-Z0-9]{5,10}$"
+                            title="Código: 5-10 caracteres alfanuméricos (A-Z, 0-9)."></div>
+                    <div class="form-group"><label for="batchNumber">Nº Lote:</label><input type="text" id="batchNumber"
+                            name="batchNumber" required></div>
+                    <div class="form-group"><label for="measurementOne">Medida 1 (mm):</label><input type="number"
+                            id="measurementOne" name="measurementOne" step="0.01" min="0"></div>
+                    <div class="form-group"><label for="measurementTwo">Medida 2 (mm):</label><input type="number"
+                            id="measurementTwo" name="measurementTwo" step="0.01" min="0"></div>
+                    <div class="form-group"><label for="status">Estado:</label><select id="status" name="status"
+                            required>
+                            <option value="">Seleccione</option>
+                            <option value="aprobado">Aprobado</option>
+                            <option value="rechazado">Rechazado</option>
+                            <option value="pendiente">Pendiente</option>
+                        </select></div>
+                    <div class="form-group"><label for="defectType">Tipo Defecto:</label><select id="defectType"
+                            name="defectType">
+                            <option value="">Ninguno</option>
+                            <option value="dimensional">Dimensional</option>
+                            <option value="visual">Visual</option>
+                            <option value="funcional">Funcional</option>
+                            <option value="otro">Otro</option>
+                        </select></div>
+                    <div class="form-group" style="grid-column: span 2;"><label
+                            for="observations">Observaciones:</label><textarea id="observations"
+                            name="observations"></textarea></div>
+                    <div class="form-buttons"><button type="button" id="restoreDraftButton"
+                            class="secondary-button">Rest. Borrador</button><button type="button" class="cancel-button"
+                            id="cancelInspectionForm">Cancelar</button><button type="submit"
+                            class="submit-button">Guardar</button></div>
+                </form>
+            </div>
+            
+            <!-- Módulo de Biblioteca de Archivos (Hijo de Calidad) -->
+            <div class="module-content" id="bibliotecaModule">
+                <div class="module-header-content">
+                    <nav aria-label="breadcrumb">
+                        <ol class="breadcrumb-content">
+                            <li class="breadcrumb-item"><a href="#" class="breadcrumb-link-main-module"
+                                    data-main-module="calidadParentModule">Calidad</a></li>
+                            <li class="breadcrumb-item active" aria-current="page">Biblioteca</li>
+                        </ol>
+                    </nav>
+                </div>
+                <h2 class="content-subtitle">Biblioteca de Archivos</h2>
+                <div class="library-filters">
+                    <div class="filter-group"><label for="documentType">Tipo:</label><select id="documentType">
+                            <option value="">Todos</option>
+                            <option value="Instructivo">Instructivos</option>
+                            <option value="Manual">Manuales</option>
+                            <option value="Ficha">Fichas</option>
+                            <option value="Norma">Normas</option>
+                            <option value="Formato">Formatos</option>
+                        </select></div>
+                    <div class="filter-group search-box"><label for="documentSearch">Buscar:</label><input type="text"
+                            id="documentSearch" placeholder="Nombre..."><i class="fas fa-search"></i></div>
+                    <div class="filter-group"><label for="filterDateFrom">Desde:</label><input type="date"
+                            id="filterDateFrom"></div>
+                    <div class="filter-group"><label for="filterDateTo">Hasta:</label><input type="date"
+                            id="filterDateTo"></div>
+                    <div class="filter-group"><label for="sortFilesBy">Ordenar:</label><select id="sortFilesBy">
+                            <option value="name_asc">Nombre A-Z</option>
+                            <option value="name_desc">Nombre Z-A</option>
+                            <option value="date_new">Recientes</option>
+                            <option value="date_old">Antiguos</option>
+                            <option value="size_asc">Tamaño ↑</option>
+                            <option value="size_desc">Tamaño ↓</option>
+                        </select></div>
+                    <button id="applyLibraryFilters" class="submit-button" style="display:none;">Aplicar</button>
+                    <!-- Oculto si se filtra al cambiar -->
+                </div>
+                <table class="documents-table">
+                    <thead>
+                        <tr>
+                            <th>Nombre</th>
+                            <th>Tipo</th>
+                            <th>Fecha</th>
+                            <th>Tamaño</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
 
-      <!-- Biblioteca -->
-      <div class="module-content" id="bibliotecaModule">
-        <h2 class="content-subtitle">Biblioteca de Archivos</h2>
-        <input type="file" id="uploadPdf" accept="application/pdf" />
-        <button id="uploadBtn" class="action-button">Subir PDF</button>
-        <ul id="documentsList"></ul>
-      </div>
+            <!-- Módulo de Indicadores de Gestión (Hijo de Calidad) -->
+            <div class="module-content" id="indicadoresModule">
+                <div class="module-header-content">
+                    <nav aria-label="breadcrumb">
+                        <ol class="breadcrumb-content">
+                            <li class="breadcrumb-item"><a href="#" class="breadcrumb-link-main-module"
+                                    data-main-module="calidadParentModule">Calidad</a></li>
+                            <li class="breadcrumb-item active" aria-current="page">Indicadores</li>
+                        </ol>
+                    </nav>
+                </div>
+                <h2 class="content-subtitle">Indicadores de Gestión</h2>
+                <div class="kpi-filters">
+                    <select id="kpiArea">
+                        <option value="">Todas las áreas</option>
+                        <option value="perfileria">Perfilería</option>
+                    </select>
+                    <label for="kpiStartDate">Desde:</label><input type="date" id="kpiStartDate"><label
+                        for="kpiEndDate">Hasta:</label><input type="date" id="kpiEndDate">
+                    <button class="submit-button" id="updateKpiBtn">Actualizar</button>
+                </div>
+                <div class="charts-container">
+                    <div class="chart-card">
+                        <h3 class="chart-title">Defectos/Área</h3>
+                        <div class="chart-area"><canvas id="defectsChart"></canvas></div>
+                    </div>
+                    <div class="chart-card">
+                        <h3 class="chart-title">Tiempos Inspección</h3>
+                        <div class="chart-area"><canvas id="timeChart"></canvas></div>
+                    </div>
+                    <div class="chart-card">
+                        <h3 class="chart-title">Aprob./Rechaz.</h3>
+                        <div class="chart-area"><canvas id="approvalChart"></canvas></div>
+                    </div>
+                    <div class="chart-card">
+                        <h3 class="chart-title">Tendencia Calidad</h3>
+                        <div class="chart-area"><canvas id="trendChart"></canvas></div>
+                    </div>
+                </div>
+            </div>
 
-      <!-- Indicadores -->
-      <div class="module-content" id="indicadoresModule">
-        <h2 class="content-subtitle">Indicadores de Gestión</h2>
-        <div class="charts-container">
-          <div class="chart-card"><h3>Defectos/Área</h3><canvas id="defectsChart"></canvas></div>
-          <div class="chart-card"><h3>Tiempos Inspección</h3><canvas id="timeChart"></canvas></div>
-          <div class="chart-card"><h3>Aprob./Rechaz.</h3><canvas id="approvalChart"></canvas></div>
-        </div>
-      </div>
+            <!-- Módulo Reportes -->
+            <div class="module-content" id="reportesModule">
+                <h1 class="content-title">Reportes</h1>
+                <div class="module-description">
+                    <p>Generación y visualización de reportes consolidados.</p>
+                </div>
+                <ul class="report-list">
+                    <li><a href="#"><i class="fas fa-file-invoice-dollar"></i> Costos Producción</a></li>
+                    <li><a href="#"><i class="fas fa-chart-bar"></i> Defectos Calidad</a></li>
+                    <li><a href="#"><i class="fas fa-tools"></i> Mantenimiento Preventivo</a></li>
+                    <li><a href="#"><i class="fas fa-boxes"></i> Rotación Inventario</a></li>
+                </ul>
+            </div>
 
-      <!-- Reportes -->
-      <div class="module-content" id="reportesModule">
-        <h1 class="content-title">Reportes</h1>
-        <ul><li><a href="#">Reporte de formularios</a></li></ul>
-      </div>
-    </main>
-  </div>
+            <footer class="content-footer">
+                <p>© 2025 Alco S.A.S. - Desarrollado por Geankarlo Paz Muñoz & Janier Mosquera Mosquera</p>
+            </footer>
+        </main>
+    </div>
 
-  <!-- CDN Chart.js -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.min.js"></script>
-  <script type="module" src="alco-js-separated.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js  "></script>
+    <script src="alco-js-separated.js"></script>
+
 </body>
+
 </html>
