@@ -3,8 +3,8 @@
 // =================================================================
 // Deberás obtener estas credenciales desde el panel de tu proyecto en Supabase
 // Ve a Project Settings > API
-const SUPABASE_URL = 'https://nnpxhhjtnbidjqvhpsni.supabase.co'; // <-- REEMPLAZA ESTO
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5ucHhoaGp0bmJpZGpxdmhwc25pIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTIzNDgyMDMsImV4cCI6MjA2NzkyNDIwM30.stXP4l6OX4-AymYQMIR2ncxnX_nDN7puQicOxVjMu-Q'; // <-- REEMPLAZA ESTO
+const SUPABASE_URL = 'https://iflroysfsuoceemyrtqi.supabase.co'; // <-- REEMPLAZA ESTO
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlmbHJveXNmc3VvY2VlbXlydHFpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTI2OTE2MDgsImV4cCI6MjA2ODI2NzYwOH0.6EldIeFT-cffbMIwGtQMSkVCRNYBanCTw2eIlK7O-4A'; // <-- REEMPLAZA ESTO
 
 // Inicializamos el cliente de Supabase
 const { createClient } = supabase;
