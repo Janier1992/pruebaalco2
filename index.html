@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Alco Suite - Supabase</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="alco-css-separated.css">
+</head>
+
+<body>
+
+    <!-- LOGIN -->
+    <div class="login-container active" id="loginContainer">
+        <header class="login-header">
+            <img src="img/LOGO.png.jpg" alt="Logo Alco" class="logo">
+            <span class="login-page-title">WEB PROYECTOS CALIDAD</span>
+        </header>
+        <div class="login-form-container">
+            <h2 class="login-form-title">Acceso al Sistema</h2>
+            <form id="loginForm">
+                <label>Correo electrónico:</label>
+                <input type="email" id="email" required />
+                <label>Contraseña:</label>
+                <input type="password" id="password" required />
+                <button type="submit" class="login-button">Ingresar</button>
+            </form>
+            <p id="loginError" style="color: red; display: none;">Credenciales incorrectas</p>
+        </div>
+    </div>
+
+    <!-- APP -->
+    <div class="app-container" id="mainAppContainer">
+        <button class="sidebar-toggle-btn" id="sidebarToggleBtn" title="Abrir Menú">
+            <i class="fas fa-bars"></i>
+        </button>
+
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <img src="img/LOGO.png.jpg" alt="Logo" class="sidebar-logo">
+                <span class="sidebar-title">Alco Suite</span>
+            </div>
+            <div class="sidebar-user-profile">
+                <div class="user-avatar-initial" id="userAvatarInitial">U</div>
+                <div class="user-details">
+                    <span class="user-name-display" id="sidebarUserDisplay">Usuario</span>
+                    <span class="user-role" id="sidebarUserRole">Rol</span>
+                </div>
+            </div>
+            <nav class="sidebar-nav">
+                <ul>
+                    <li><a href="#" class="nav-link active" data-module="dashboardPrincipalModule">
+                            <i class="fas fa-tachometer-alt"></i> Dashboard Principal</a></li>
+                    <li class="nav-item-has-children">
+                        <a href="#" class="nav-link" data-module-parent="calidadParentModule">
+                            <i class="fas fa-check-circle"></i> Calidad <i
+                                class="fas fa-chevron-down arrow-icon"></i></a>
+                        <ul class="submenu">
+                            <li><a href="#" class="nav-link submenu-link" data-module="formulariosModule">
+                                    <i class="fas fa-clipboard-list"></i> Formularios</a></li>
+                            <li><a href="#" class="nav-link submenu-link" data-module="bibliotecaModule">
+                                    <i class="fas fa-folder-open"></i> Biblioteca</a></li>
+                        </ul>
+                    </li>
+                    <li><a href="#" class="nav-link" data-module="reportesModule">
+                            <i class="fas fa-file-alt"></i> Reportes</a></li>
+                </ul>
+            </nav>
+            <div class="sidebar-footer">
+                <button id="logoutButton" class="logout-button-sidebar">
+                    <i class="fas fa-sign-out-alt"></i> Cerrar Sesión
+                </button>
+            </div>
+        </aside>
+
+        <main class="content-area" id="contentArea">
+
+            <!-- Dashboard -->
+            <div class="module-content active" id="dashboardPrincipalModule">
+                <h1 class="content-title">Dashboard Principal</h1>
+                <div class="dashboard-widgets">
+                    <div class="widget">
+                        <h3>Total Formularios</h3>
+                        <div class="widget-value" id="totalForms">--</div>
+                    </div>
+                    <div class="widget">
+                        <h3>Documentos</h3>
+                        <div class="widget-value" id="totalDocs">--</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Formularios -->
+            <div class="module-content" id="formulariosModule">
+                <h2 class="content-subtitle">Formularios de Inspección</h2>
+                <form id="inspectionForm" class="inspection-form">
+                    <div class="form-group">
+                        <label>Fecha Inspección:</label>
+                        <input type="date" name="inspection_date" required />
+                    </div>
+                    <div class="form-group">
+                        <label>Inspector:</label>
+                        <input type="text" name="inspector_name" required />
+                    </div>
+                    <div class="form-group">
+                        <label>Código Producto:</label>
+                        <input type="text" name="product_code" required pattern="[A-Z0-9]{5,10}" />
+                    </div>
+                    <div class="form-group">
+                        <label>Nº Lote:</label>
+                        <input type="text" name="batch_number" required />
+                    </div>
+                    <div class="form-group">
+                        <label>Estado:</label>
+                        <select name="status" required>
+                            <option value="">Seleccione</option>
+                            <option value="aprobado">Aprobado</option>
+                            <option value="rechazado">Rechazado</option>
+                            <option value="pendiente">Pendiente</option>
+                        </select>
+                    </div>
+                    <div class="form-buttons">
+                        <button type="submit" class="submit-button">Guardar</button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Biblioteca -->
+            <div class="module-content" id="bibliotecaModule">
+                <h2 class="content-subtitle">Biblioteca de Archivos</h2>
+                <input type="file" id="uploadPdf" accept="application/pdf" />
+                <button id="uploadBtn" class="action-button">Subir PDF</button>
+                <ul id="documentsList"></ul>
+            </div>
+
+            <!-- Reportes -->
+            <div class="module-content" id="reportesModule">
+                <h2 class="content-subtitle">Reportes</h2>
+                <ul>
+                    <li><a href="#" onclick="downloadReport()">Descargar reporte de formularios</a></li>
+                </ul>
+            </div>
+
+        </main>
+    </div>
+
+    <script type="module" src="alco-js-separated.js"></script>
+</body>
+
+</html>
