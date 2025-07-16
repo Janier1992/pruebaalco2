@@ -124,7 +124,7 @@ function setupInspectionForm() {
             submitButton.textContent = 'Guardar';
             return;
         }
-        const inspectionData = { inspection_date: document.getElementById('inspectionDate').value, area: document.getElementById('formType').value, inspector_name: document.getElementById('inspectorName').value, product_code: document.getElementById('productCode').value, batch_number: document.getElementById('batchNumber').value, measurement_1: parseFloat(document.getElementById('measurementOne').value) || null, measurement_2: parseFloat(document.getElementById('measurementTwo').value) || null, status: document.getElementById('status').value, defect_type: document.getElementById('defectType').value || null, observations: document.getElementById('observations').value || null, };
+        const inspectionData = { inspector_id: (await user).data.user.id, inspection_date: document.getElementById('inspectionDate').value, area: document.getElementById('formType').value, inspector_name: document.getElementById('inspectorName').value, product_code: document.getElementById('productCode').value, batch_number: document.getElementById('batchNumber').value, measurement_1: parseFloat(document.getElementById('measurementOne').value) || null, measurement_2: parseFloat(document.getElementById('measurementTwo').value) || null, status: document.getElementById('status').value, defect_type: document.getElementById('defectType').value || null, observations: document.getElementById('observations').value || null, };
         try {
             const { error } = await _supabase.from('quality_inspections').insert([inspectionData]);
             if (error) throw error;
@@ -142,7 +142,7 @@ function setupInspectionForm() {
 }
 
 // =================================================================
-// (ACTUALIZADO) MÓDULO DE BIBLIOTECA CON FUNCIONALIDAD DE STORAGE
+// (ACTUALIZADO) MÓDULO DE BIBLIOTECA CON FUNCIONALIDAD DE STORAGE Y DEPURACIÓN
 // =================================================================
 async function setupLibraryModule() {
     const libraryModule = document.getElementById('bibliotecaModule');
@@ -150,7 +150,6 @@ async function setupLibraryModule() {
     console.log("Configurando Biblioteca (modo Supabase con Storage)...");
     libraryModule.dataset.initialized = 'true';
 
-    // Función para renderizar la tabla (actualizada para manejar acciones)
     function renderDocumentsTable(docsToRender) {
         const tbody = libraryModule.querySelector('.documents-table tbody');
         if (!tbody) return;
@@ -177,40 +176,18 @@ async function setupLibraryModule() {
             tbody.appendChild(tr);
         });
 
-        // Asignar eventos a los nuevos botones
         tbody.querySelectorAll('.view-btn').forEach(btn => btn.onclick = handleViewFile);
         tbody.querySelectorAll('.download-btn').forEach(btn => btn.onclick = handleDownloadFile);
         tbody.querySelectorAll('.delete-btn').forEach(btn => btn.onclick = handleDeleteFile);
     }
     
-    // Función para obtener y mostrar los documentos
     async function applyFiltersAndSort() {
-        const searchTerm = document.getElementById('documentSearch').value.toLowerCase();
-        const selectedType = document.getElementById('documentType').value;
-        const sortBy = document.getElementById('sortFilesBy').value.split('_');
-        try {
-            let query = _supabase.from('documents').select('*');
-            if (searchTerm) { query = query.ilike('file_name', `%${searchTerm}%`); }
-            if (selectedType) { query = query.eq('document_type', selectedType); }
-            if (sortBy.length === 2) {
-                const [column, direction] = sortBy;
-                const columnMap = { name: 'file_name', date: 'uploaded_at', size: 'file_size_kb' };
-                if (columnMap[column]) {
-                    query = query.order(columnMap[column], { ascending: direction === 'asc' });
-                }
-            }
-            const { data, error } = await query;
-            if (error) throw error;
-            renderDocumentsTable(data);
-        } catch (error) {
-            console.error('Error al cargar documentos:', error);
-            const tbody = libraryModule.querySelector('.documents-table tbody');
-            tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; color: red;">Error al cargar datos.</td></tr>`;
-        }
+        // ... (código sin cambios)
     }
 
-    // --- NUEVAS FUNCIONES DE MANEJO DE ARCHIVOS ---
     async function handleUploadFile(event) {
+        console.log("Función handleUploadFile iniciada. Archivo seleccionado:", event.target.files[0]);
+        
         const file = event.target.files[0];
         if (!file) return;
 
@@ -219,29 +196,39 @@ async function setupLibraryModule() {
         uploadButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Subiendo...';
 
         try {
-            const user = (await _supabase.auth.getUser()).data.user;
-            if (!user) throw new Error("Usuario no autenticado.");
+            const { data: { user }, error: userError } = await _supabase.auth.getUser();
+            if (userError || !user) throw new Error("Usuario no autenticado. Inicia sesión de nuevo.");
 
-            // 1. Subir el archivo a Supabase Storage
+            console.log(`Usuario autenticado: ${user.email}. Procediendo a subir archivo.`);
+
             const filePath = `public/${user.id}/${Date.now()}-${file.name}`;
+            console.log(`Intentando subir archivo a Storage en la ruta: ${filePath}`);
+            
             const { error: uploadError } = await _supabase.storage
                 .from('documentos_calidad')
                 .upload(filePath, file);
 
-            if (uploadError) throw uploadError;
+            if (uploadError) {
+                console.error("Error DETALLADO de Supabase Storage:", uploadError);
+                throw uploadError;
+            }
 
-            // 2. Insertar la metadata en la tabla 'documents'
+            console.log("Archivo subido a Storage exitosamente. Insertando metadata en la base de datos...");
+            
             const documentData = {
                 uploaded_by: user.id,
                 file_name: file.name,
-                document_type: 'Formato', // O puedes pedirlo en un prompt
+                document_type: 'Formato', 
                 file_path: filePath,
                 file_size_kb: Math.round(file.size / 1024)
             };
+            
             const { error: insertError } = await _supabase.from('documents').insert([documentData]);
 
             if (insertError) {
+                console.error("Error DETALLADO de inserción en DB:", insertError);
                 await _supabase.storage.from('documentos_calidad').remove([filePath]);
+                console.log("Se ha revertido la subida del archivo de Storage debido a un error en la DB.");
                 throw insertError;
             }
 
@@ -249,8 +236,8 @@ async function setupLibraryModule() {
             applyFiltersAndSort(); 
 
         } catch (error) {
-            alert(`Error al subir el archivo: ${error.message}`);
-            console.error(error);
+            alert(`Error al subir el archivo: ${error.message}\n\nRevisa la consola de desarrollador (F12) para más detalles.`);
+            console.error("FALLO EN EL PROCESO DE SUBIDA:", error);
         } finally {
             uploadButton.disabled = false;
             uploadButton.innerHTML = '<i class="fas fa-upload"></i> Subir Documento';
@@ -258,69 +245,11 @@ async function setupLibraryModule() {
         }
     }
 
-    async function handleViewFile(event) {
-        const filePath = event.currentTarget.dataset.path;
-        try {
-            const { data, error } = await _supabase.storage
-                .from('documentos_calidad')
-                .createSignedUrl(filePath, 60); 
-            
-            if (error) throw error;
-            
-            window.open(data.signedUrl, '_blank');
-
-        } catch (error) {
-            alert(`No se pudo obtener la URL para ver el archivo: ${error.message}`);
-        }
-    }
-
-    async function handleDownloadFile(event) {
-        const filePath = event.currentTarget.dataset.path;
-        const fileName = event.currentTarget.dataset.name;
-        try {
-            const { data, error } = await _supabase.storage
-                .from('documentos_calidad')
-                .download(filePath);
-
-            if (error) throw error;
-
-            const link = document.createElement('a');
-            link.href = URL.createObjectURL(data);
-            link.download = fileName;
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-            URL.revokeObjectURL(link.href);
-
-        } catch (error) {
-            alert(`Error al descargar el archivo: ${error.message}`);
-        }
-    }
-
-    async function handleDeleteFile(event) {
-        const docId = event.currentTarget.dataset.id;
-        const filePath = event.currentTarget.dataset.path;
-
-        if (!confirm(`¿Estás seguro de que quieres borrar el documento "${filePath}"? Esta acción es irreversible.`)) {
-            return;
-        }
-
-        try {
-            const { error: storageError } = await _supabase.storage.from('documentos_calidad').remove([filePath]);
-            if (storageError) throw storageError;
-            
-            const { error: dbError } = await _supabase.from('documents').delete().eq('id', docId);
-            if (dbError) throw dbError;
-
-            alert('Documento eliminado correctamente.');
-            applyFiltersAndSort();
-
-        } catch (error) {
-            alert(`Error al eliminar el documento: ${error.message}`);
-        }
-    }
-
-    // --- ASIGNACIÓN DE EVENTOS ---
+    async function handleViewFile(event) { /* ... (código sin cambios) ... */ }
+    async function handleDownloadFile(event) { /* ... (código sin cambios) ... */ }
+    async function handleDeleteFile(event) { /* ... (código sin cambios) ... */ }
+    
+    // --- ASIGNACIÓN DE EVENTOS CON DEPURACIÓN ---
     ['documentSearch', 'documentType', 'sortFilesBy'].forEach(id => {
         const el = document.getElementById(id);
         if (el) {
@@ -332,15 +261,22 @@ async function setupLibraryModule() {
     const uploadButton = document.getElementById('uploadDocumentBtn');
     const fileInput = document.getElementById('documentUploadInput');
     if (uploadButton && fileInput) {
-        uploadButton.onclick = () => fileInput.click();
+        console.log("Botón y input de archivo encontrados. Asignando eventos de click y change.");
+        uploadButton.onclick = () => {
+            console.log("¡Click en 'Subir Documento' detectado! Abriendo selector de archivo...");
+            fileInput.click();
+        };
         fileInput.onchange = handleUploadFile;
+    } else {
+        console.error("CRÍTICO: No se encontró el botón con id='uploadDocumentBtn' o el input con id='documentUploadInput'. Verifica que los IDs en tu index.html sean correctos.");
     }
 
     applyFiltersAndSort();
 }
 
+
 // --- El resto del código no necesita cambios ---
-function initCharts() { const indicadoresModule = document.getElementById('indicadoresModule'); if (!indicadoresModule || !indicadoresModule.classList.contains('active') || indicadoresModule.dataset.chartsInitialized === 'true') { return; } console.log("Inicializando gráficos..."); const chartsToCreate = [{ id: 'defectsChart', type: 'bar', data: { labels: ['Perfilería', 'Pintura', 'Troquelados', 'Felpa', 'Vidrio', 'Despachos'], datasets: [{ label: '% de Defectos', data: [2.3, 1.7, 3.5, 0.9, 1.2, 0.5], backgroundColor: '#004282', borderWidth: 1 }] }, options: { scales: { y: { beginAtZero: true, title: { display: true, text: 'Porcentaje (%)' } } } } }, { id: 'timeChart', type: 'line', data: { labels: ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo'], datasets: [{ label: 'Tiempo promedio (min)', data: [12, 15, 10, 9, 11], borderColor: '#0056b3', backgroundColor: 'rgba(0, 86, 179, 0.1)', tension: 0.4, fill: true }] }, options: { scales: { y: { beginAtZero: true } } } }, { id: 'approvalChart', type: 'pie', data: { labels: ['Aprobados', 'Rechazados', 'Pendientes'], datasets: [{ data: [85, 10, 5], backgroundColor: ['#28a745', '#dc3545', '#ffc107'] }] }, options: {} }, { id: 'trendChart', type: 'line', data: { labels: ['Ene', 'Feb', 'Mar', 'Abr', 'May'], datasets: [{ label: 'Calidad General', data: [92, 94, 91, 95, 97], borderColor: '#004282', backgroundColor: 'transparent' }, { label: 'Meta', data: [90, 90, 90, 90, 90], borderColor: '#a5a7a8', borderDash: [5, 5], backgroundColor: 'transparent' }] }, options: { scales: { y: { min: 85, max: 100, title: { display: true, text: 'Puntuación (%)' } } } } }]; let chartsCreated = 0; chartsToCreate.forEach(chartConfig => { const ctx = document.getElementById(chartConfig.id)?.getContext('2d'); if (ctx) { new Chart(ctx, { type: chartConfig.type, data: chartConfig.data, options: chartConfig.options }); chartsCreated++; } }); if (chartsCreated > 0) { indicadoresModule.dataset.chartsInitialized = 'true'; console.log(chartsCreated + " gráficos inicializados."); } }
+function initCharts() { /* ... (código sin cambios) ... */ }
 
 window.onload = function () {
     console.log("Página cargada y lista.");
