@@ -12,32 +12,20 @@ const _supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 console.log('Supabase Initialized');
 
-// =================================================================
-// (ELIMINADO) DATOS DE PRUEBA
-// =================================================================
-// const validUsers = [ ... ]; // Eliminado. Ahora la autenticación la maneja Supabase.
-// let documentsData = [ ... ]; // Eliminado. Los datos se cargarán desde la DB.
-// =================================================================
 
 let isDesktopSidebarCollapsed = false;
 let isMobileSidebarOpen = false;
 const SIDEBAR_COLLAPSED_KEY = 'sidebarAlcoDesktopCollapsedState_v3';
 
-// --- (Las funciones de la barra lateral como toggleSidebar, updateSidebarToggleButtonIcon, etc., no necesitan cambios) ---
+// --- Funciones de la barra lateral (sin cambios) ---
 function updateSidebarToggleButtonIcon() { const toggleBtnIcon = document.getElementById('sidebarToggleBtn').querySelector('i'); if (window.innerWidth <= 768) { toggleBtnIcon.classList.remove('fa-angle-double-left', 'fa-angle-double-right'); if (isMobileSidebarOpen) { toggleBtnIcon.classList.add('fa-times'); document.getElementById('sidebarToggleBtn').title = "Cerrar Menú"; } else { toggleBtnIcon.classList.add('fa-bars'); document.getElementById('sidebarToggleBtn').title = "Abrir Menú"; } } else { toggleBtnIcon.classList.remove('fa-bars', 'fa-times'); if (isDesktopSidebarCollapsed) { toggleBtnIcon.classList.add('fa-angle-double-right'); document.getElementById('sidebarToggleBtn').title = "Expandir Menú"; } else { toggleBtnIcon.classList.add('fa-angle-double-left'); document.getElementById('sidebarToggleBtn').title = "Minimizar Menú"; } } }
 function toggleSidebar() { const sidebar = document.getElementById('sidebar'); const appContainer = document.getElementById('mainAppContainer'); if (window.innerWidth <= 768) { isMobileSidebarOpen = !isMobileSidebarOpen; sidebar.classList.toggle('open-mobile', isMobileSidebarOpen); } else { isDesktopSidebarCollapsed = !isDesktopSidebarCollapsed; sidebar.classList.toggle('collapsed', isDesktopSidebarCollapsed); appContainer.classList.toggle('sidebar-collapsed', isDesktopSidebarCollapsed); localStorage.setItem(SIDEBAR_COLLAPSED_KEY, isDesktopSidebarCollapsed.toString()); } updateSidebarToggleButtonIcon(); }
 function applyInitialSidebarState() { if (window.innerWidth > 768) { const savedState = localStorage.getItem(SIDEBAR_COLLAPSED_KEY); if (savedState === 'true') { isDesktopSidebarCollapsed = false; toggleSidebar(); } else { isDesktopSidebarCollapsed = true; toggleSidebar(); } } else { document.getElementById('sidebar').classList.remove('open-mobile', 'collapsed'); document.getElementById('mainAppContainer').classList.remove('sidebar-collapsed'); isMobileSidebarOpen = false; updateSidebarToggleButtonIcon(); } }
-// --- (Fin de las funciones de la barra lateral) ---
 
-/**
- * =================================================================
- * (ACTUALIZADO) FUNCIÓN DE LOGIN
- * Ahora es una función asíncrona que se comunica con Supabase Auth.
- * =================================================================
- */
+
 async function intentLogin() {
     console.log("Intentando login con Supabase...");
-    const usernameInput = document.getElementById('username'); // Asumimos que el usuario ingresa su email aquí
+    const usernameInput = document.getElementById('username');
     const passwordInput = document.getElementById('password');
     const email = usernameInput.value;
     const password = passwordInput.value;
@@ -53,8 +41,6 @@ async function intentLogin() {
         }
 
         console.log("Login exitoso para:", data.user.email);
-        
-        // Una vez logueado, obtenemos el perfil del usuario desde nuestra tabla `profiles`
         await loadUserProfile(data.user.id);
 
         document.getElementById('loginContainer').classList.remove('active');
@@ -73,18 +59,13 @@ async function intentLogin() {
     }
 }
 
-/**
- * =================================================================
- * (NUEVA) Carga el perfil del usuario desde la tabla 'profiles'.
- * =================================================================
- */
 async function loadUserProfile(userId) {
     try {
         const { data: profile, error } = await _supabase
             .from('profiles')
             .select('username, role')
             .eq('id', userId)
-            .single(); // .single() espera un solo resultado
+            .single();
 
         if (error) throw error;
 
@@ -93,7 +74,6 @@ async function loadUserProfile(userId) {
             document.querySelector('.sidebar-user-profile .user-role').textContent = profile.role;
             document.getElementById('userAvatarInitial').textContent = profile.username.charAt(0).toUpperCase();
         } else {
-             // Fallback si no hay perfil
             document.getElementById('sidebarUserDisplay').textContent = 'Usuario';
             document.querySelector('.sidebar-user-profile .user-role').textContent = 'Rol Desconocido';
         }
@@ -102,27 +82,16 @@ async function loadUserProfile(userId) {
     }
 }
 
-
-/**
- * =================================================================
- * (ACTUALIZADO) FUNCIÓN DE LOGOUT
- * Ahora usa el método de Supabase para cerrar la sesión.
- * =================================================================
- */
 async function logout() {
     console.log("Cerrando sesión con Supabase...");
     const { error } = await _supabase.auth.signOut();
-
     if (error) {
         console.error('Error al cerrar sesión:', error);
         alert('Hubo un problema al cerrar la sesión.');
         return;
     }
-
     document.getElementById('mainAppContainer').classList.remove('active');
     document.getElementById('loginContainer').classList.add('active');
-    
-    // Limpiar campos por seguridad
     const usernameInput = document.getElementById('username');
     const passwordInput = document.getElementById('password');
     if (usernameInput) usernameInput.value = '';
@@ -130,36 +99,24 @@ async function logout() {
     console.log("Sesión cerrada exitosamente.");
 }
 
-// La función activateModule no necesita cambios estructurales, funciona como está.
 function activateModule(moduleId, isSubmenuLink = false) { console.log("Activando módulo:", moduleId); document.querySelectorAll('.module-content').forEach(moduleEl => { moduleEl.classList.remove('active'); }); const targetModuleElement = document.getElementById(moduleId); if (targetModuleElement) { targetModuleElement.classList.add('active'); const moduleTitleElement = targetModuleElement.querySelector('.content-title, .content-subtitle'); document.title = `Alco Suite - ${moduleTitleElement ? moduleTitleElement.textContent.trim() : moduleId.replace('Module', '')}`; document.querySelectorAll('.sidebar-nav .nav-link').forEach(link => { link.classList.remove('active'); }); const activeLink = document.querySelector(`.sidebar-nav .nav-link[data-module="${moduleId}"]`); if (activeLink) { activeLink.classList.add('active'); const parentLi = activeLink.closest('.nav-item-has-children'); if (parentLi) { parentLi.querySelector('a[data-module-parent]').classList.add('active'); if (!parentLi.classList.contains('open')) parentLi.classList.add('open'); } } if (window.innerWidth <= 768 && isMobileSidebarOpen) { toggleSidebar(); } if (moduleId === 'formulariosModule') setupInspectionForm(); else if (moduleId === 'bibliotecaModule') setupLibraryModule(); else if (moduleId === 'indicadoresModule') initCharts(); } else { console.error("Módulo no encontrado:", moduleId, ". Mostrando Dashboard Principal por defecto."); activateModule('dashboardPrincipalModule'); } }
 
-/**
- * =================================================================
- * (ACTUALIZADO) MÓDULO DE FORMULARIOS
- * El guardado ahora es asíncrono e inserta en la tabla `quality_inspections`.
- * =================================================================
- */
 function setupInspectionForm() {
     const inspectionForm = document.getElementById('inspectionForm');
     if (!inspectionForm || inspectionForm.dataset.initialized === 'true') return;
     console.log("Configurando Formularios de Inspección...");
     inspectionForm.dataset.initialized = 'true';
-
-    // El guardado de borrador local puede mantenerse, es una buena funcionalidad.
     const formInputs = inspectionForm.querySelectorAll('input, select, textarea');
     const DRAFT_KEY = 'inspectionFormDraft_v3';
     function saveDraft() { const draftData = {}; formInputs.forEach(input => { if (input.name) draftData[input.name] = input.value; }); localStorage.setItem(DRAFT_KEY, JSON.stringify(draftData)); }
     function loadDraft() { const draft = localStorage.getItem(DRAFT_KEY); if (draft) { if (confirm("Borrador encontrado. ¿Cargar?")) { const draftData = JSON.parse(draft); formInputs.forEach(input => { if (input.name && draftData[input.name] !== undefined) { input.value = draftData[input.name]; } }); console.log('Borrador cargado'); } } }
     function clearDraftAndForm() { localStorage.removeItem(DRAFT_KEY); inspectionForm.reset(); console.log('Borrador y form limpiados'); }
     formInputs.forEach(input => input.addEventListener('input', saveDraft));
-
-    // Lógica de envío del formulario AHORA es asíncrona
     inspectionForm.onsubmit = async function (e) {
         e.preventDefault();
         const submitButton = e.target.querySelector('button[type="submit"]');
         submitButton.disabled = true;
         submitButton.textContent = 'Guardando...';
-
         const user = _supabase.auth.getUser();
         if (!user) {
             alert("No estás autenticado. Por favor, inicia sesión de nuevo.");
@@ -167,29 +124,12 @@ function setupInspectionForm() {
             submitButton.textContent = 'Guardar';
             return;
         }
-
-        // Crear el objeto para insertar en Supabase
-        const inspectionData = {
-            // inspector_id: (await user).data.user.id, // Esto asocia la inspección al usuario logueado
-            inspection_date: document.getElementById('inspectionDate').value,
-            area: document.getElementById('formType').value,
-            inspector_name: document.getElementById('inspectorName').value, // Podríamos obtenerlo del perfil
-            product_code: document.getElementById('productCode').value,
-            batch_number: document.getElementById('batchNumber').value,
-            measurement_1: parseFloat(document.getElementById('measurementOne').value) || null,
-            measurement_2: parseFloat(document.getElementById('measurementTwo').value) || null,
-            status: document.getElementById('status').value,
-            defect_type: document.getElementById('defectType').value || null,
-            observations: document.getElementById('observations').value || null,
-        };
-
+        const inspectionData = { inspection_date: document.getElementById('inspectionDate').value, area: document.getElementById('formType').value, inspector_name: document.getElementById('inspectorName').value, product_code: document.getElementById('productCode').value, batch_number: document.getElementById('batchNumber').value, measurement_1: parseFloat(document.getElementById('measurementOne').value) || null, measurement_2: parseFloat(document.getElementById('measurementTwo').value) || null, status: document.getElementById('status').value, defect_type: document.getElementById('defectType').value || null, observations: document.getElementById('observations').value || null, };
         try {
             const { error } = await _supabase.from('quality_inspections').insert([inspectionData]);
             if (error) throw error;
-            
             alert('Inspección guardada exitosamente en la base de datos.');
             clearDraftAndForm();
-
         } catch (error) {
             alert(`Error al guardar la inspección: ${error.message}`);
             console.error('Error de inserción:', error);
@@ -198,25 +138,19 @@ function setupInspectionForm() {
             submitButton.textContent = 'Guardar';
         }
     };
-    
-    // (Resto de la lógica del formulario sin cambios...)
     const productCodeInput = document.getElementById('productCode'); if (productCodeInput) { productCodeInput.oninvalid = function () { if (productCodeInput.validity.patternMismatch) { productCodeInput.setCustomValidity('Código: 5-10 alfanuméricos (A-Z, 0-9).'); } else if (productCodeInput.validity.valueMissing) { productCodeInput.setCustomValidity('Campo obligatorio.'); } else { productCodeInput.setCustomValidity(''); } }; productCodeInput.oninput = () => productCodeInput.setCustomValidity(''); } const restoreDraftButton = document.getElementById('restoreDraftButton'); if (restoreDraftButton) restoreDraftButton.onclick = loadDraft; const cancelInspectionFormButton = document.getElementById('cancelInspectionForm'); if (cancelInspectionFormButton) { cancelInspectionFormButton.onclick = () => { if (confirm("¿Cancelar y limpiar formulario?")) { clearDraftAndForm(); } }; } loadDraft();
 }
 
-
-/**
- * =================================================================
- * (ACTUALIZADO) MÓDULO DE BIBLIOTECA
- * Ahora carga los datos desde la tabla `documents` de Supabase.
- * =================================================================
- */
-function setupLibraryModule() {
+// =================================================================
+// (ACTUALIZADO) MÓDULO DE BIBLIOTECA CON FUNCIONALIDAD DE STORAGE
+// =================================================================
+async function setupLibraryModule() {
     const libraryModule = document.getElementById('bibliotecaModule');
     if (!libraryModule || libraryModule.dataset.initialized === 'true') return;
-    console.log("Configurando Biblioteca (modo Supabase)...");
+    console.log("Configurando Biblioteca (modo Supabase con Storage)...");
     libraryModule.dataset.initialized = 'true';
 
-    // Función para renderizar la tabla, ahora es más genérica
+    // Función para renderizar la tabla (actualizada para manejar acciones)
     function renderDocumentsTable(docsToRender) {
         const tbody = libraryModule.querySelector('.documents-table tbody');
         if (!tbody) return;
@@ -227,7 +161,6 @@ function setupLibraryModule() {
         }
         docsToRender.forEach(doc => {
             const tr = document.createElement('tr');
-            // Usamos los nombres de columna de la DB: file_name, document_type, uploaded_at, file_size_kb
             const formattedDate = new Date(doc.uploaded_at).toLocaleDateString();
             const fileSize = doc.file_size_kb ? `${doc.file_size_kb} KB` : 'N/A';
 
@@ -239,50 +172,36 @@ function setupLibraryModule() {
                 <td class="document-actions">
                     <button class="view-btn" data-path="${doc.file_path}"><i class="fas fa-eye"></i> Ver</button>
                     <button class="download-btn" data-path="${doc.file_path}" data-name="${doc.file_name}"><i class="fas fa-download"></i> Descargar</button>
+                    <button class="delete-btn" data-id="${doc.id}" data-path="${doc.file_path}"><i class="fas fa-trash"></i> Borrar</button>
                 </td>`;
             tbody.appendChild(tr);
         });
 
-        // NOTA: La lógica para ver/descargar desde Supabase Storage es diferente.
-        // Esto requerirá obtener una URL firmada o pública del archivo.
-        tbody.querySelectorAll('.view-btn, .download-btn').forEach(btn => btn.onclick = (e) => {
-            alert(`Acción para el archivo: ${e.currentTarget.dataset.path}. \n(Implementación pendiente con Supabase Storage)`);
-        });
+        // Asignar eventos a los nuevos botones
+        tbody.querySelectorAll('.view-btn').forEach(btn => btn.onclick = handleViewFile);
+        tbody.querySelectorAll('.download-btn').forEach(btn => btn.onclick = handleDownloadFile);
+        tbody.querySelectorAll('.delete-btn').forEach(btn => btn.onclick = handleDeleteFile);
     }
-
-    // Función principal para obtener datos y aplicar filtros
+    
+    // Función para obtener y mostrar los documentos
     async function applyFiltersAndSort() {
         const searchTerm = document.getElementById('documentSearch').value.toLowerCase();
         const selectedType = document.getElementById('documentType').value;
-        // ... aquí iría la lógica de filtros de fecha si se implementa en la query ...
-        const sortBy = document.getElementById('sortFilesBy').value.split('_'); // ej: ['name', 'asc']
-
+        const sortBy = document.getElementById('sortFilesBy').value.split('_');
         try {
             let query = _supabase.from('documents').select('*');
-
-            // Aplicar filtros
-            if (searchTerm) {
-                query = query.ilike('file_name', `%${searchTerm}%`); // ilike es case-insensitive
-            }
-            if (selectedType) {
-                query = query.eq('document_type', selectedType);
-            }
-
-            // Aplicar ordenamiento
+            if (searchTerm) { query = query.ilike('file_name', `%${searchTerm}%`); }
+            if (selectedType) { query = query.eq('document_type', selectedType); }
             if (sortBy.length === 2) {
                 const [column, direction] = sortBy;
-                // Mapear el nombre del sort a la columna de la DB
                 const columnMap = { name: 'file_name', date: 'uploaded_at', size: 'file_size_kb' };
                 if (columnMap[column]) {
                     query = query.order(columnMap[column], { ascending: direction === 'asc' });
                 }
             }
-
             const { data, error } = await query;
             if (error) throw error;
-            
             renderDocumentsTable(data);
-
         } catch (error) {
             console.error('Error al cargar documentos:', error);
             const tbody = libraryModule.querySelector('.documents-table tbody');
@@ -290,7 +209,118 @@ function setupLibraryModule() {
         }
     }
 
-    // Asignar eventos a los filtros
+    // --- NUEVAS FUNCIONES DE MANEJO DE ARCHIVOS ---
+    async function handleUploadFile(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+
+        const uploadButton = document.getElementById('uploadDocumentBtn');
+        uploadButton.disabled = true;
+        uploadButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Subiendo...';
+
+        try {
+            const user = (await _supabase.auth.getUser()).data.user;
+            if (!user) throw new Error("Usuario no autenticado.");
+
+            // 1. Subir el archivo a Supabase Storage
+            const filePath = `public/${user.id}/${Date.now()}-${file.name}`;
+            const { error: uploadError } = await _supabase.storage
+                .from('documentos_calidad')
+                .upload(filePath, file);
+
+            if (uploadError) throw uploadError;
+
+            // 2. Insertar la metadata en la tabla 'documents'
+            const documentData = {
+                uploaded_by: user.id,
+                file_name: file.name,
+                document_type: 'Formato', // O puedes pedirlo en un prompt
+                file_path: filePath,
+                file_size_kb: Math.round(file.size / 1024)
+            };
+            const { error: insertError } = await _supabase.from('documents').insert([documentData]);
+
+            if (insertError) {
+                await _supabase.storage.from('documentos_calidad').remove([filePath]);
+                throw insertError;
+            }
+
+            alert('¡Archivo subido exitosamente!');
+            applyFiltersAndSort(); 
+
+        } catch (error) {
+            alert(`Error al subir el archivo: ${error.message}`);
+            console.error(error);
+        } finally {
+            uploadButton.disabled = false;
+            uploadButton.innerHTML = '<i class="fas fa-upload"></i> Subir Documento';
+            event.target.value = '';
+        }
+    }
+
+    async function handleViewFile(event) {
+        const filePath = event.currentTarget.dataset.path;
+        try {
+            const { data, error } = await _supabase.storage
+                .from('documentos_calidad')
+                .createSignedUrl(filePath, 60); 
+            
+            if (error) throw error;
+            
+            window.open(data.signedUrl, '_blank');
+
+        } catch (error) {
+            alert(`No se pudo obtener la URL para ver el archivo: ${error.message}`);
+        }
+    }
+
+    async function handleDownloadFile(event) {
+        const filePath = event.currentTarget.dataset.path;
+        const fileName = event.currentTarget.dataset.name;
+        try {
+            const { data, error } = await _supabase.storage
+                .from('documentos_calidad')
+                .download(filePath);
+
+            if (error) throw error;
+
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(data);
+            link.download = fileName;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(link.href);
+
+        } catch (error) {
+            alert(`Error al descargar el archivo: ${error.message}`);
+        }
+    }
+
+    async function handleDeleteFile(event) {
+        const docId = event.currentTarget.dataset.id;
+        const filePath = event.currentTarget.dataset.path;
+
+        if (!confirm(`¿Estás seguro de que quieres borrar el documento "${filePath}"? Esta acción es irreversible.`)) {
+            return;
+        }
+
+        try {
+            const { error: storageError } = await _supabase.storage.from('documentos_calidad').remove([filePath]);
+            if (storageError) throw storageError;
+            
+            const { error: dbError } = await _supabase.from('documents').delete().eq('id', docId);
+            if (dbError) throw dbError;
+
+            alert('Documento eliminado correctamente.');
+            applyFiltersAndSort();
+
+        } catch (error) {
+            alert(`Error al eliminar el documento: ${error.message}`);
+        }
+    }
+
+    // --- ASIGNACIÓN DE EVENTOS ---
     ['documentSearch', 'documentType', 'sortFilesBy'].forEach(id => {
         const el = document.getElementById(id);
         if (el) {
@@ -298,23 +328,26 @@ function setupLibraryModule() {
             else el.onchange = applyFiltersAndSort;
         }
     });
+    
+    const uploadButton = document.getElementById('uploadDocumentBtn');
+    const fileInput = document.getElementById('documentUploadInput');
+    if (uploadButton && fileInput) {
+        uploadButton.onclick = () => fileInput.click();
+        fileInput.onchange = handleUploadFile;
+    }
 
-    // Carga inicial de documentos al activar el módulo
     applyFiltersAndSort();
 }
 
-// Las funciones initCharts y el listener window.onload permanecen mayormente iguales
+// --- El resto del código no necesita cambios ---
 function initCharts() { const indicadoresModule = document.getElementById('indicadoresModule'); if (!indicadoresModule || !indicadoresModule.classList.contains('active') || indicadoresModule.dataset.chartsInitialized === 'true') { return; } console.log("Inicializando gráficos..."); const chartsToCreate = [{ id: 'defectsChart', type: 'bar', data: { labels: ['Perfilería', 'Pintura', 'Troquelados', 'Felpa', 'Vidrio', 'Despachos'], datasets: [{ label: '% de Defectos', data: [2.3, 1.7, 3.5, 0.9, 1.2, 0.5], backgroundColor: '#004282', borderWidth: 1 }] }, options: { scales: { y: { beginAtZero: true, title: { display: true, text: 'Porcentaje (%)' } } } } }, { id: 'timeChart', type: 'line', data: { labels: ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo'], datasets: [{ label: 'Tiempo promedio (min)', data: [12, 15, 10, 9, 11], borderColor: '#0056b3', backgroundColor: 'rgba(0, 86, 179, 0.1)', tension: 0.4, fill: true }] }, options: { scales: { y: { beginAtZero: true } } } }, { id: 'approvalChart', type: 'pie', data: { labels: ['Aprobados', 'Rechazados', 'Pendientes'], datasets: [{ data: [85, 10, 5], backgroundColor: ['#28a745', '#dc3545', '#ffc107'] }] }, options: {} }, { id: 'trendChart', type: 'line', data: { labels: ['Ene', 'Feb', 'Mar', 'Abr', 'May'], datasets: [{ label: 'Calidad General', data: [92, 94, 91, 95, 97], borderColor: '#004282', backgroundColor: 'transparent' }, { label: 'Meta', data: [90, 90, 90, 90, 90], borderColor: '#a5a7a8', borderDash: [5, 5], backgroundColor: 'transparent' }] }, options: { scales: { y: { min: 85, max: 100, title: { display: true, text: 'Puntuación (%)' } } } } }]; let chartsCreated = 0; chartsToCreate.forEach(chartConfig => { const ctx = document.getElementById(chartConfig.id)?.getContext('2d'); if (ctx) { new Chart(ctx, { type: chartConfig.type, data: chartConfig.data, options: chartConfig.options }); chartsCreated++; } }); if (chartsCreated > 0) { indicadoresModule.dataset.chartsInitialized = 'true'; console.log(chartsCreated + " gráficos inicializados."); } }
 
 window.onload = function () {
     console.log("Página cargada y lista.");
-
-    // (ACTUALIZADO) onsubmit ahora llama a una función async, no necesita prevenir default aquí
-    // ya que se hace dentro de la función `setup...`
+    
     const loginForm = document.getElementById('loginForm');
     if (loginForm) loginForm.onsubmit = (e) => { e.preventDefault(); intentLogin(); };
 
-    // El resto de los listeners iniciales están bien
     const logoutButton = document.getElementById('logoutButton');
     if (logoutButton) logoutButton.onclick = logout;
     const sidebarToggleBtn = document.getElementById('sidebarToggleBtn');
